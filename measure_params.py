@@ -88,7 +88,6 @@ try:
         spectator.set_transform(carla.Transform(transform.location + carla.Location(z=200), carla.Rotation(pitch=-90)))
         actor_list.append(spectator)
         time.sleep(1)
-        rss = getrss()  # getrss(target.forward_speed,follower.forward_speed,)
         meas.update()
 
 
