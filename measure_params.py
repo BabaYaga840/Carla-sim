@@ -37,13 +37,16 @@ class getparams:
     def update(self):
         self.x1 = self.vehicle.get_transform().location
         self.time1=datetime.now()
-        self.v1=getd(self.x1,self.x0)/(self.time1-self.time0)
-        self.a=(self.v1-self.v0)/(self.time1-self.time0)
+        self.v1=getd(self.x1,self.x0)/((self.time1-self.time0).total_seconds())
+        self.a=(self.v1-self.v0)/((self.time1-self.time0).total_seconds())
         self.x0=self.x1
         self.v0=self.v1
         self.time0=self.time1
-        print("---v---", self.v1)
-        print("---a---", self.a)
+        self.v1=self.vehicle.get_velocity()
+        self.a=self.vehicle.get_acceleration()
+        print("---v---", np.sqrt((self.v1).dot(self.v1)))
+        print("---a---", np.sqrt((self.a).dot(self.a)))
+        return np.sqrt((self.v1).dot(self.v1))
 
 def getd(v1, v2):
     V = v1
@@ -81,14 +84,30 @@ try:
     tf = spawn_point  # target.get_transform()
     actor_list.append(target)
     meas = getparams(target)
-    while True:
-        target.apply_control(carla.VehicleControl(throttle=0.5, steer=0))
+    
+    
+    v=target.get_velocity()
+    v.x=100
+    target.set_target_velocity(v)
+    time1=datetime.now()
+    time0=datetime.now()
+    vmag=1
+    while (time1-time0).total_seconds() <1:
         spectator = world.get_spectator()
         transform = target.get_transform()
         spectator.set_transform(carla.Transform(transform.location + carla.Location(z=200), carla.Rotation(pitch=-90)))
         actor_list.append(spectator)
-        time.sleep(1)
         meas.update()
+        time1=datetime.now()
+    while vmag>0:
+        target.apply_control(carla.VehicleControl(brake=1.0, steer=0))
+        spectator = world.get_spectator()
+        transform = target.get_transform()
+        spectator.set_transform(carla.Transform(transform.location + carla.Location(z=200), carla.Rotation(pitch=-90)))
+        actor_list.append(spectator)
+        print("----------------")
+        #time.sleep(1)
+        vmag = meas.update()
 
 
 finally:
