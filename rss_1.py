@@ -20,7 +20,7 @@ IM_WIDTH = 640
 IM_HEIGHT = 480
 initial_d = 10
 
-def getrss: #getrss(v1,v2,a1,a2):
+def getrss(): #getrss(v1,v2,a1,a2):
     return 12
 
 
@@ -57,14 +57,15 @@ class PID:
         self.i=self.i+e
     def move(self,v):
         th=self.kp*self.p+self.ki*self.i+self.kd*self.d
+        print("--------------------", th)
         if th>1:
             v.apply_control(carla.VehicleControl(throttle=1, steer=0))
         elif th>0:
             v.apply_control(carla.VehicleControl(throttle=th, steer=0))
         elif th>-1:
-            v.apply_control(carla.VehicleControl(brake=th, steer=0))
-        else
-            v.apply_control(carla.VehicleControl(brake=-1, steer=0))
+            v.apply_control(carla.VehicleControl(brake=-th, steer=0))
+        else:
+            v.apply_control(carla.VehicleControl(brake=1, steer=0))
 
 def get_target_signal():
     a = np.zeros((2, 2))
@@ -80,15 +81,15 @@ actor_list = []
 try:
     client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)
-
-    world = client.get_world()
+    world=client.get_world()
+    world = client.load_world('Town05')
 
     blueprint_library = world.get_blueprint_library()
 
     bp = blueprint_library.filter('model3')[0]
     print(bp)
 
-    spawn_point = random.choice(world.get_map().get_spawn_points())
+    spawn_point = world.get_map().get_spawn_points()[190]
 
     target = world.spawn_actor(bp, spawn_point)
     # get current vehicle transform to get both location & rotation
@@ -99,7 +100,7 @@ try:
     y = V.y
     z = V.z
     d = math.sqrt(x * x + y * y + z * z)
-    tf.location = tf.location + carla.Location(-initial_d * x / d, -initial_d * y / d, 10)
+    tf.location = tf.location + carla.Location(-initial_d * x / d, -initial_d * y / d, 1)
     follower = world.spawn_actor(bp, tf)
     # world.spawn(new_vehicle, carla.Transform(new_loc, carla.Rotation())
     # target.set_autopilot(True)
@@ -107,9 +108,10 @@ try:
     actor_list.append(target)
     actor_list.append(follower)
     #follower.apply_control(carla.VehicleControl(throttle=0.5, steer=0))
-    target.apply_control(carla.VehicleControl(throttle=0.1, steer=0))
-    con=PID(0.1,0.1,0.1)
+    
+    con=PID(0.1,0,0.01)
     while True:
+        target.apply_control(carla.VehicleControl(throttle=0.5, steer=0))
         spectator = world.get_spectator()
         transform = follower.get_transform()
         spectator.set_transform(carla.Transform(transform.location + carla.Location(z=200), carla.Rotation(pitch=-90)))
@@ -118,7 +120,7 @@ try:
         d = getd(target, follower)
         rss = getrss()#getrss(target.forward_speed,follower.forward_speed,)
         con.update(d,rss)
-        con.move(target)
+        con.move(follower)
         print(d)
 
 finally:
