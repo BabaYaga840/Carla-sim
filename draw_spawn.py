@@ -103,7 +103,7 @@ def main():
         help='TCP port of CARLA Simulator (default: 2000)')
     argparser.add_argument(
         '-m', '--map',
-        default='Town02',
+        default='Town05',
         help='Load a new map to visualize'
     )
 
