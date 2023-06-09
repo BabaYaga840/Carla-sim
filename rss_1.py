@@ -19,9 +19,30 @@ import math
 IM_WIDTH = 640
 IM_HEIGHT = 480
 initial_d = 10
+tau=1
 
-def getrss(): #getrss(v1,v2,a1,a2):
-    return 12
+def getdec(v):
+    return 5
+
+def getrss(V1,V2):
+    v1=V1.get_velocity()
+    v2=V2.get_velocity()
+    t=V2.get_transform().get_forward_vector()
+    v1=(v1).dot(t)/np.sqrt((t).dot(t))
+    v2 = (v2).dot(t) / np.sqrt((t).dot(t))
+    a2c=V2.get_acceleration()
+    l1=V1.bounding_box.extent.x
+    l2=V2.bounding_box.extent.x
+    a1=getdec(v1)
+    a2=getdec(v2)
+    if a1>=a2:
+        return (a2c/2)*(a2c/a2+1)*(tau**2)+v2*(a2c/a2+1)*tau+(v2**2/(2*a2)-v1**2(2*a1))+l1+l2
+    else:
+        if tau>=(v1-v2)/(a2c+a1) and tau<=(v1*a2/a1-v2)/(a2c+a2):
+            return (v2-v1)*tau+(tau**2)*(a1+a2c)/2+(v1-v2-(a1+a2c)*tau)**2/(2*(a2-a1))+l1+l2
+        else:
+            return a2c*(a2c/a2+1)*(tau**2)/2+v2*(a2c/a2+1)*tau+((v2**2)/(2*a2)-(v1**2)/(2*a1))+l1+l2
+
 
 
 def getd(v1, v2):
@@ -42,30 +63,34 @@ def getd(v1, v2):
     d = ((x1 - x2) + (y1 - y2) + (z1 - z2)) / math.sqrt(xf ** 2 + yf ** 2 + zf ** 2)
     return d
 
+
 class PID:
-    def __init__(self,kp,ki,kd):
-        self.kp=kp
-        self.kd=kd
-        self.ki=ki
-        self.p=0
-        self.i=0
-        self.d=0
-    def update(self,d,t):
-        e=d-t
-        self.d=e-self.p
-        self.p=e
-        self.i=self.i+e
-    def move(self,v):
-        th=self.kp*self.p+self.ki*self.i+self.kd*self.d
+    def __init__(self, kp, ki, kd):
+        self.kp = kp
+        self.kd = kd
+        self.ki = ki
+        self.p = 0
+        self.i = 0
+        self.d = 0
+
+    def update(self, d, t):
+        e = d - t
+        self.d = e - self.p
+        self.p = e
+        self.i = self.i + e
+
+    def move(self, v):
+        th = self.kp * self.p + self.ki * self.i + self.kd * self.d
         print("--------------------", th)
-        if th>1:
+        if th > 1:
             v.apply_control(carla.VehicleControl(throttle=1, steer=0))
-        elif th>0:
+        elif th > 0:
             v.apply_control(carla.VehicleControl(throttle=th, steer=0))
-        elif th>-1:
+        elif th > -1:
             v.apply_control(carla.VehicleControl(brake=-th, steer=0))
         else:
             v.apply_control(carla.VehicleControl(brake=1, steer=0))
+
 
 def get_target_signal():
     a = np.zeros((2, 2))
@@ -81,7 +106,7 @@ actor_list = []
 try:
     client = carla.Client('localhost', 2000)
     client.set_timeout(2.0)
-    world=client.get_world()
+    world = client.get_world()
     world = client.load_world('Town05')
 
     blueprint_library = world.get_blueprint_library()
@@ -107,9 +132,9 @@ try:
     # follower.set_autopilot(True)
     actor_list.append(target)
     actor_list.append(follower)
-    #follower.apply_control(carla.VehicleControl(throttle=0.5, steer=0))
-    
-    con=PID(0.1,0,0.01)
+    # follower.apply_control(carla.VehicleControl(throttle=0.5, steer=0))
+
+    con = PID(0.1, 0, 0.01)
     while True:
         target.apply_control(carla.VehicleControl(throttle=0.5, steer=0))
         spectator = world.get_spectator()
@@ -118,8 +143,8 @@ try:
         actor_list.append(spectator)
         time.sleep(1)
         d = getd(target, follower)
-        rss = getrss()#getrss(target.forward_speed,follower.forward_speed,)
-        con.update(d,rss)
+        rss = getrss(target,follower)  # getrss(target.forward_speed,follower.forward_speed,)
+        con.update(d, rss)
         con.move(follower)
         print(d)
 
