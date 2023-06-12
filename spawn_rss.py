@@ -17,32 +17,42 @@ import numpy as np
 import math
 
 velocity=20
-tau=1
-num=3
+tau=1.0
+num=4
+safe_d=10
 
-def getdec(v):
-    return 5
+def getdec(v,n):
+    if n!=1:
+         return 20
+    else:
+         return 4
 
 def get_maxacc(v):
-    return 10
+    return 0
 
-def getrss(V1):
+def getrss(V1,a,b):
     v1=V1.get_velocity()
     v2=v1
     t=V1.get_transform().get_forward_vector()
-    v1=(v1).dot(t)/np.sqrt((t).dot(t))
-    v2 = (v2).dot(t) / np.sqrt((t).dot(t))
+    v1=velocity#v1.x#(v1).dot(t)/np.sqrt((t).dot(t))
+    v2 =velocity#v2.x#S (v2).dot(t) / np.sqrt((t).dot(t)) 
+    print(v1,v2)
     a2c=get_maxacc(v2)
     l1=V1.bounding_box.extent.x*2
-    a1=getdec(v1)
-    a2=getdec(v2)
+    a1=getdec(v1,a)
+    a2=getdec(v2,b)
     if a1>=a2:
-        return (a2c/2)*(a2c/a2+1)*(tau**2)+v2*(a2c/a2+1)*tau+(v2**2/(2*a2)-v1**2(2*a1))+l1
+        print("uwu")
+        d= (a2c/2)*(a2c/a2+1)*(tau**2)+v2*(a2c/a2+1)*tau+(v2**2/(2*a2)-v1**2/(2*a1))+l1+safe_d
     else:
         if tau>=(v1-v2)/(a2c+a1) and tau<=(v1*a2/a1-v2)/(a2c+a2):
-            return (v2-v1)*tau+(tau**2)*(a1+a2c)/2+(v1-v2-(a1+a2c)*tau)**2/(2*(a2-a1))+l1
+            print("--------")
+            d= (v2-v1)*tau+(tau**2)*(a1+a2c)/2+(v1-v2-(a1+a2c)*tau)**2/(2*(a2-a1))+l1*2+safe_d
         else:
-            return a2c*(a2c/a2+1)*(tau**2)/2+v2*(a2c/a2+1)*tau+((v2**2)/(2*a2)-(v1**2)/(2*a1))+l1
+            print("tgcvgtvvfyvf")
+            d= a2c*(a2c/a2+1)*(tau**2)/2+v2*(a2c/a2+1)*tau+((v2**2)/(2*a2)-(v1**2)/(2*a1))+l1*2+safe_d
+    print(a,b,d)
+    return d
 
 
 
@@ -66,22 +76,28 @@ def getd(v1, v2):
 
 class spawn:
     def __init__(self,num,V,sp):
-        self.num=num
+        self.velocity=V.get_velocity()
+        self.velocity.x=velocity
+        self.num=num-1
         self.V=V
         self.sp=sp
         self.list=[]
         self.list.append(self.V)
-        self.V.set_target_velocity(velocity)
+        self.V.set_target_velocity(self.velocity)
+        self.i=0
     def next(self):
         if self.num>0:
             vec = self.sp.rotation.get_forward_vector()
-            rss_d=getrss(self.V)
-            self.sp.location = self.sp.location + carla.Location(-rss_d * vec.x / np.sqrt((vec)np.dot(vec)), -rss_d * vec.y / np.sqrt((vec)np.dot(vec)), 1)
+            rss_d=getrss(self.V,self.i,self.i+1)
+            self.sp.location = self.sp.location + carla.Location(-rss_d * vec.x / np.sqrt((vec).dot(vec)), -rss_d * 
+            #self.sp.location = self.sp.location + carla.Location(-rss_d , -rss_d *
+vec.y / np.sqrt((vec).dot(vec)), 1)
             follower = world.spawn_actor(bp, self.sp)
             self.V=follower
-            self.V.set_target_velocity(velocity)
+            self.V.set_target_velocity(self.velocity)
             self.list.append(self.V)
             actor_list.append(follower)
+            self.i=self.i+1
             self.num=self.num-1
             self.next()
     def get_list(self):
@@ -104,22 +120,25 @@ try:
     bp = blueprint_library.filter('model3')[0]
     print(bp)
 
-    spawn_point = world.get_map().get_spawn_points()[190]
+    spawn_point = world.get_map().get_spawn_points()[126]
 
     target = world.spawn_actor(bp, spawn_point)
 
     actor_list.append(target)
     obj=spawn(num,target,spawn_point)
-    spawn.next()
-    list=spawn.get_list()
+    obj.next()
+    list=obj.get_list()
     spectator = world.get_spectator()
     actor_list.append(spectator)
     while True:
 
-        
+        time.sleep(3)
         for i in range(num):
-            list[i].apply_control(carla.VehicleControl(brake=1, steer=0))
-            transform = list[0].get_transform()
+            if i!=1:
+                list[i].apply_control(carla.VehicleControl(brake=1.0, steer=0))
+            else:
+                list[i].apply_control(carla.VehicleControl(brake=0.5, steer=0))
+            transform = list[2].get_transform()
             spectator.set_transform(
             carla.Transform(transform.location + carla.Location(z=200), carla.Rotation(pitch=-90)))
             time.sleep(tau)
