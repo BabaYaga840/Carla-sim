@@ -83,7 +83,7 @@ def getd(v1, v2):
 
 
 class spawn:
-    def __init__(self, num, V, sp):
+    def __init__(self, num, V, sp,velocity):
         self.velocity = V.get_velocity()
         self.velocity.x = velocity
         self.num = num - 1
@@ -166,17 +166,25 @@ try:
     spawn_point = world.get_map().get_spawn_points()[126]
     target = world.spawn_actor(bp, spawn_point)
     actor_list.append(target)
-    
-    vca=target.get_velocity()
-    vca.x=vc
-    obj = spawn(num, target, spawn_point)
+
+
+    obj = spawn(num, target, spawn_point,velocity)
     obj.next()
     list = obj.get_list()
 
     spawn_point = world.get_map().get_spawn_points()[]
+    lanelead = world.spawn_actor(bp, spawn_point)
+    actor_list.append(lanelead)
+
+    obj = spawn(3, target, spawn_point, vc)
+    obj.next()
+    list1 = obj.get_list()
+    change=list1[1]
+
+    """spawn_point = world.get_map().get_spawn_points()[]
     change = world.spawn_actor(bp, spawn_point)
     change.set_target_velocity(vca)
-    actor_list.append(change)
+    actor_list.append(change)"""
 
     spectator = world.get_spectator()
     actor_list.append(spectator)
@@ -191,13 +199,12 @@ try:
         a1=D/4+(dv)/4
 
         print("---", r1 * 2)
-        move([list[1],change],[r1,a0],[r1,a1],[0,dy],[velocity,vc],2)
+        #move([list[1],change],[r1,a0],[r1,a1],[0,dy],[velocity,vc],2)
+        move([list[1],change,list1[2]],[r1,a0,a0],[r1,a1,a1],[0,dy,0],[velocity,vc,vc],2)
 
         print(getd(list[0], list[1]), "-----------", list[1].get_velocity())
 
         time.sleep(10)
-
-
 
 
 
