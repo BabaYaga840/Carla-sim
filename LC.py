@@ -163,7 +163,7 @@ try:
     bp = blueprint_library.filter('model3')[0]
     print(bp)
 
-    spawn_point = world.get_map().get_spawn_points()[126]
+    spawn_point = world.get_map().get_spawn_points()[46]
     target = world.spawn_actor(bp, spawn_point)
     actor_list.append(target)
 
@@ -172,7 +172,7 @@ try:
     obj.next()
     list = obj.get_list()
 
-    spawn_point = world.get_map().get_spawn_points()[]
+    spawn_point = world.get_map().get_spawn_points()[45]
     lanelead = world.spawn_actor(bp, spawn_point)
     actor_list.append(lanelead)
 
