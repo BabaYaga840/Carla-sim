@@ -131,7 +131,7 @@ def move(v,a0,a1,y,velocity,t):
         t2 = datetime.now()
         for i in range(len(a0)):
             vel.x = velocity[i] - a0[i] * ((t2 - t0).total_seconds())
-            vel.y = y[i] * ((t2 - t0).total_seconds())
+            #vel.y = y[i] * ((t2 - t0).total_seconds())
             v[i].set_target_velocity(vel)
 
 
@@ -142,6 +142,27 @@ def move(v,a0,a1,y,velocity,t):
         t2 = datetime.now()
         for i in range(len(a0)):
             vel.x = velocity[i] + a1[i] * ((t2 - t0).total_seconds()-a0[i])
+            #vel.y = -y[i] * ((t2 - t0).total_seconds())
+            v[i].set_target_velocity(vel)
+
+        reset_spec(list[0], spectator)
+    print(vel.x)
+    
+     while ((t2 - t0).total_seconds()) < t/2:
+        t2 = datetime.now()
+        for i in range(len(a0)):
+            #vel.x = velocity[i] - a0[i] * ((t2 - t0).total_seconds())
+            vel.y = y[i] * ((t2 - t0).total_seconds())
+            v[i].set_target_velocity(vel)
+
+
+        reset_spec(list[0], spectator)
+    t0 = datetime.now()
+    print(vel.x)
+    while ((t2 - t0).total_seconds()) < t/2:
+        t2 = datetime.now()
+        for i in range(len(a0)):
+            #vel.x = velocity[i] + a1[i] * ((t2 - t0).total_seconds()-a0[i])
             vel.y = -y[i] * ((t2 - t0).total_seconds())
             v[i].set_target_velocity(vel)
 
@@ -194,7 +215,7 @@ try:
         r1 = getrss(list[1], 0, 1) / 2
         D=list[0].get_transform().location.x-change.get_transform().location.x-r1*2
         dv=list[0].get_velocity().x-change.get_velocity().x
-        dy=(list[0].get_velocity().y-change.get_velocity().y)/2
+        dy=(list[0].get_velocity().y-change.get_velocity().y)
         a0=D/4+3*(dv)/4
         a1=D/4+(dv)/4
 
