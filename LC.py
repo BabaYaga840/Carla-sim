@@ -141,7 +141,7 @@ def move(v,a0,a1,y,velocity,t):
     while ((t2 - t0).total_seconds()) < t:
         t2 = datetime.now()
         for i in range(len(a0)):
-            vel.x = velocity[i] + a1[i] * ((t2 - t0).total_seconds())
+            vel.x = velocity[i] + a1[i] * ((t2 - t0).total_seconds()-a0[i])
             vel.y = -y[i] * ((t2 - t0).total_seconds())
             v[i].set_target_velocity(vel)
 
